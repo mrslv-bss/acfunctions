@@ -5,7 +5,7 @@
 		~ Release
 	Current version: [1.1]
 		~ [1.1.1] Code and tabulation optimization
-		~ [1.1.2] 
+		~ [1.1.2] Code optimization. Added initial terminate script hotkey. Dev comments. Removed crutch for begin a process (). Fixen bug with impossible to use Shift+Ctrl+) withput load config.
 
 A_CaretX works by asking the system where the caret is. Some code editors does not use the system implementation of a caret, therefore the system does not know where's caret is. 
 In a way, it has no caret, just an imitation of one.
@@ -21,7 +21,6 @@ Accordingly, keep in mind that the script may not work in VSCODE, Notepads (Basi
 
 CoordMode, Caret
 CoordMode, ToolTip
-status = 0
 
 	; Run as Admin
 TryAgain:
@@ -190,23 +189,27 @@ SetTimer, looplabel, on
 return
 
 ^+9::
-if dirfile =
-	return
 send, {(}
-status = 1
 return
 
 ^+0::
-if dirfile =
+if (dirfile = "")	{
+	send, {)}
 	return
+}
 send, {)}
-if (status)	{
+	; Check is the combination already written '()'
+BlockInput, on
+send, +{left 2}
+Copied := saveClipboard()
+send, {Right}
+BlockInput, off
+if regexmatch(Copied, "\(")	{
 	send, ^{left}
 	oldACaretX := A_CaretX, oldACaretY := A_CaretY
 	sleep 100
 	SetTimer, looplabel, on
 }
-status = 0
 return
 
 (::
