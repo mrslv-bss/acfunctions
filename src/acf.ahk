@@ -18,37 +18,16 @@ Accordingly, keep in mind that the script may not work in VSCODE, Notepads (Basi
 #InstallKeybdHook
 #InstallMouseHook
 CoordMode, Caret
+OnExit, exit
 TryAgain:
 if not A_IsAdmin
 	Run *RunAs "%A_ScriptFullPath%",,UseErrorLevel
 if (errorlevel)	{
-	MsgBox, 262212, ACFunctions, ACF`, was NOT run as administrator.`n`n===`nAntiMissBtn - disabled.`n===`n`nAntiMissBtn guarantees the absence of random erasing of the text at the work of the script`, therefore`, its presence is mandatory.`n`nPress Yes - to run as administrator.`nPress No - to continue.
+	MsgBox, 262212, ACFunctions, ACF`, was NOT run as administrator.`n`n===`nFor the text erase function to work correctly, the script must be run by the administrator.`n`nPress Yes - to run as administrator.`nPress No - to continue.
 	IfMsgBox Yes
 		goto TryAgain
 }
-;~ FileInstall, BASS_DEVWARE.jpg, %A_Temp%\BASS_DEVWARE.jpg, 1
-CustomColor = C0C0C0
-Gui, 2:+AlwaysOnTop +LastFound +Owner
-Gui, 2:Color, %CustomColor%
-loop, 25
-{
-	sleep 40
-	;~ Gui 2:Add, Picture,, %A_Temp%\BASS_DEVWARE.jpg
-	WinSet, TransColor, %CustomColor% %A_Index%0
-	Gui, 2:-Caption
-	Gui, 2:Show, xCenter yCenter
-	if (A_Index == 25)	{
-		sleep 700
-		SINDEX := A_Index
-		loop, 25
-		{
-			sleep 40
-			SINDEX -= 1
-			WinSet, TransColor, %CustomColor% %SINDEX%0
-			Gui, 2:Show, xCenter yCenter
-		}
-	}
-}
+
 Menu, tray, NoStandard
 Menu, tray, add, Restore window, showhide
 Menu, tray, add
@@ -58,6 +37,7 @@ Hotkey, (, off
 Hotkey, ), off
 Hotkey, Right, off
 Hotkey, Left, off
+HotKey, !^END, Exit
 CoordMode, ToolTip
 Gui, Add, Edit, x9 y10 w262 h20 +disabled vEdit, DIR\config.ini
 Gui, Add, Text, x12 y50 w100 h40 vKeysList, Show/Hide []`nContinue ( ) []`nExit []
@@ -67,6 +47,12 @@ Gui, Add, Button, x230 y35 w40 h15 gselectd, Select
 Gui, Add, Button, x188 y35 w41 h15 gcheck vcheck +disabled, Check
 Gui, Show, w275 h100, ACFunctions
 return
+
+/*
+Shift + Ctrl + ( + ) - start process
+Shift + Space - recover process after completion
+Alt + Ctrl + END - terminates the script immediately (should be changed by rewrite in config)
+*/
 
 recheck:
 FuncsList := ""
@@ -113,6 +99,7 @@ Loop, read, %edit%
 		timerdelay := RegExReplace(A_LoopReadLine, "Timer delay - ", "")
 	}
 }
+HotKey, !^END, Off
 HotKey, %exitscript%, Exit
 HotKey, %showhide%, showhide
 HotKey, %createB%, ContinueScript
