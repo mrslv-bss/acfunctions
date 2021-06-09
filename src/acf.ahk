@@ -1,8 +1,17 @@
 /*
+	Miroslav Bass
+	bassmiroslav@gmail.com
+	Last stable version: [1.0] 4.14.2019
+		~ Release
+	Current version: [1.1]
+		~ [1.1.1] Code and tabulation optimization
+
 A_CaretX works by asking the system where the caret is. Some code editors does not use the system implementation of a caret, therefore the system does not know where's caret is. 
 In a way, it has no caret, just an imitation of one.
 Accordingly, keep in mind that the script may not work in VSCODE, Notepads (Basic notepad working) and other.
 */
+
+
 
 #Persistent
 #SingleInstance, Force
@@ -13,7 +22,7 @@ TryAgain:
 if not A_IsAdmin
 	Run *RunAs "%A_ScriptFullPath%",,UseErrorLevel
 if (errorlevel)	{
-	MsgBox, 262212, SWHelper : bass_devware, SWHelper`, was NOT run as administrator.`n`n===`nAntiMissBtn - disabled.`n===`n`nAntiMissBtn guarantees the absence of random erasing of the text at the work of the script`, therefore`, its presence is mandatory.`n`nPress Yes - to run as administrator.`nPress No - to continue.
+	MsgBox, 262212, ACFunctions, ACF`, was NOT run as administrator.`n`n===`nAntiMissBtn - disabled.`n===`n`nAntiMissBtn guarantees the absence of random erasing of the text at the work of the script`, therefore`, its presence is mandatory.`n`nPress Yes - to run as administrator.`nPress No - to continue.
 	IfMsgBox Yes
 		goto TryAgain
 }
@@ -41,9 +50,7 @@ loop, 25
 	}
 }
 Menu, tray, NoStandard
-Menu, tray, add, @bass_devware, link
-Menu, tray, add
-Menu, tray, add, Restore window, Restore
+Menu, tray, add, Restore window, showhide
 Menu, tray, add
 Menu, tray, add, Quit, Exit
 status = 0
@@ -54,11 +61,11 @@ Hotkey, Left, off
 CoordMode, ToolTip
 Gui, Add, Edit, x9 y10 w262 h20 +disabled vEdit, DIR\config.ini
 Gui, Add, Text, x12 y50 w100 h40 vKeysList, Show/Hide []`nContinue ( ) []`nExit []
-Gui, Add, Text, x155 y55 w120 h14 glink cBlue, VK / BASS_DEVWARE
+Gui, Add, Link, x220 y55 w120 h14 cBlue, <a href="https://github.com/BassTechnologies/acfunctions">Repository</a>
 Gui, Add, GroupBox, x7 y30 w115 h65 , Config Settings
 Gui, Add, Button, x230 y35 w40 h15 gselectd, Select
 Gui, Add, Button, x188 y35 w41 h15 gcheck vcheck +disabled, Check
-Gui, Show, w275 h100, SWHelper : bass_devware
+Gui, Show, w275 h100, ACFunctions
 return
 
 recheck:
@@ -100,8 +107,8 @@ Loop, read, %edit%
 		exitscript := RegExReplace(A_LoopReadLine, "Close the script - ", "")
 	}	else if regexmatch(A_LoopReadLine, "Edit exist scipt\(_\) - (.*)")	{
 		createB := RegExReplace(A_LoopReadLine, "Edit exist scipt\(_\) - ", "")
-	}	else if regexmatch(A_LoopReadLine, "Show/Hide InfoWindow - (.*)")	{
-		showhide := RegExReplace(A_LoopReadLine, "Show/Hide InfoWindow - ", "")
+	}	else if regexmatch(A_LoopReadLine, "Show/Hide menu - (.*)")	{
+		showhide := RegExReplace(A_LoopReadLine, "Show/Hide menu - ", "")
 	}	else if regexmatch(A_LoopReadLine, "Timer delay - (.*)")	{
 		timerdelay := RegExReplace(A_LoopReadLine, "Timer delay - ", "")
 	}
@@ -117,10 +124,7 @@ goto recheck
 return
 
 showhide:
-IfWinNotActive, SWHelper : bass_devware
-	gui, show
-else	
-	gui, hide
+Gui, Show, % (i := !i) ? "Hide" : ""
 return
 
 selectd:
@@ -140,16 +144,14 @@ Hotkey, ), on
 Hotkey, Right, on
 Hotkey, Left, on
 if (oldACaretX = "" or oldACaretY = "")	{
-	oldACaretX := A_CaretX
-	oldACaretY := A_CaretY
+	oldACaretX := A_CaretX, oldACaretY := A_CaretY
 	sleep 1
 }
 TrayTip, A ,%oldACaretX%`n%oldACaretY%, 1
 if (oldACaretX != A_CaretX or oldACaretY != A_CaretY)	{
 	SoundBeep, 100, 10
 	if (oldACaretY != A_CaretY)	{
-		oldACaretX := A_CaretX
-		oldACaretY := A_CaretY
+		oldACaretX := A_CaretX, oldACaretY := A_CaretY
 		Hotkey, (, off
 		Hotkey, ), off
 		Hotkey, Left, off
@@ -174,8 +176,7 @@ if (oldACaretX != A_CaretX or oldACaretY != A_CaretY)	{
 		okeylines =
 	}
 }
-oldACaretX := A_CaretX
-oldACaretY := A_CaretY
+oldACaretX := A_CaretX, oldACaretY := A_CaretY
 return
 
 ContinueScript:
@@ -183,8 +184,7 @@ ch := saveClipboard()
 if ch != ()
 	return
 send, {left}
-oldACaretX := A_CaretX
-oldACaretY := A_CaretY
+oldACaretX := A_CaretX, oldACaretY := A_CaretY
 sleep 100
 SetTimer, looplabel, on
 return
@@ -202,9 +202,8 @@ if dirfile =
 send, {)}
 if (status)	{
 	send, ^{left}
-oldACaretX := A_CaretX
-oldACaretY := A_CaretY
-sleep 100
+	oldACaretX := A_CaretX, oldACaretY := A_CaretY
+	sleep 100
 	SetTimer, looplabel, on
 }
 status = 0
@@ -214,18 +213,6 @@ return
 )::
 Right::
 Left::
-return
-
-link:
-run, https://vk.com/bass_devware
-return
-
-Restore:
-Gui,Show
-return
-
-exit:
-ExitApp
 return
 
 saveClipboard()	{
@@ -238,9 +225,5 @@ saveClipboard()	{
 	return selected
 }
 
-GetWords(text, target, separator) {
-	result := [], partNumber := 2, parts := StrSplit(text, target)
-	Loop,% parts.Length() - 1
-	result.Push(StrSplit(StrSplit(parts[partNumber++], "`r`n")[1], separator))
-	return result
-}
+Exit:
+ExitApp
