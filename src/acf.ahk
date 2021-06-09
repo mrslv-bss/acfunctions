@@ -1,3 +1,9 @@
+/*
+A_CaretX works by asking the system where the caret is. Some code editors does not use the system implementation of a caret, therefore the system does not know where's caret is. 
+In a way, it has no caret, just an imitation of one.
+Accordingly, keep in mind that the script may not work in VSCODE, Notepads (Basic notepad working) and other.
+*/
+
 #Persistent
 #SingleInstance, Force
 #InstallKeybdHook
@@ -6,8 +12,7 @@ CoordMode, Caret
 TryAgain:
 if not A_IsAdmin
 	Run *RunAs "%A_ScriptFullPath%",,UseErrorLevel
-if errorlevel != 0
-{
+if (errorlevel)	{
 	MsgBox, 262212, SWHelper : bass_devware, SWHelper`, was NOT run as administrator.`n`n===`nAntiMissBtn - disabled.`n===`n`nAntiMissBtn guarantees the absence of random erasing of the text at the work of the script`, therefore`, its presence is mandatory.`n`nPress Yes - to run as administrator.`nPress No - to continue.
 	IfMsgBox Yes
 		goto TryAgain
@@ -23,8 +28,7 @@ loop, 25
 	WinSet, TransColor, %CustomColor% %A_Index%0
 	Gui, 2:-Caption
 	Gui, 2:Show, xCenter yCenter
-	if A_Index = 25
-	{
+	if (A_Index == 25)	{
 		sleep 700
 		SINDEX := A_Index
 		loop, 25
@@ -56,23 +60,23 @@ Gui, Add, Button, x230 y35 w40 h15 gselectd, Select
 Gui, Add, Button, x188 y35 w41 h15 gcheck vcheck +disabled, Check
 Gui, Show, w275 h100, SWHelper : bass_devware
 return
+
 recheck:
 FuncsList := ""
 label:
-Loop, read, %A_WorkingDir%\%dirfile%
+Loop, read, %dirfile%
 {
 	Loop, parse, A_LoopReadLine, %A_Tab%
 	{
 		aSSa := " " . A_LoopField
-		if regexmatch(aSSa, "(.[\s]*)?([\s].[^(=)%!.]*)\((.[A-z]*)?\)", exits)
-		{
+		if regexmatch(aSSa, "(.[\s]*)?([\s].[^(=)%!.]*)\((.[A-z]*)?\)", exits)	{
 			if regexmatch(exits2, "[!|^|%|(|)|#](.*)", ifsaaa)
 				continue, label
 			exits1 := RegExReplace(exits, " ", "")
 			exits2 := RegExReplace(exits2, " ", "")
 			Loop, parse, FuncsList
-			if regexmatch(FuncsList, exits2)
-				continue, label
+				if regexmatch(FuncsList, exits2)
+					continue, label
 			FuncsList := FuncsList . exits2 . "(" . exits3 . ")" . ", "
 		}
 	}
@@ -88,24 +92,17 @@ check:
 gui, submit, nohide
 Loop, read, %edit%
 {
-	if regexmatch(A_LoopReadLine, "List with funcs - (.*)")
-	{
+	if regexmatch(A_LoopReadLine, "List with funcs - (.*)")	{
 		dirfile := RegExReplace(A_LoopReadLine, "List with funcs - ", "")
-	}
-	else if regexmatch(A_LoopReadLine, "Close the script - (.*)")
-	{
+		StringTrimRight, localdir, A_WorkingDir, 4
+		dirfile = %localdir%\res\%dirfile%
+	}	else if regexmatch(A_LoopReadLine, "Close the script - (.*)")	{
 		exitscript := RegExReplace(A_LoopReadLine, "Close the script - ", "")
-	}
-	else if regexmatch(A_LoopReadLine, "Edit exist scipt\(_\) - (.*)")
-	{
+	}	else if regexmatch(A_LoopReadLine, "Edit exist scipt\(_\) - (.*)")	{
 		createB := RegExReplace(A_LoopReadLine, "Edit exist scipt\(_\) - ", "")
-	}
-	else if regexmatch(A_LoopReadLine, "Show/Hide InfoWindow - (.*)")
-	{
+	}	else if regexmatch(A_LoopReadLine, "Show/Hide InfoWindow - (.*)")	{
 		showhide := RegExReplace(A_LoopReadLine, "Show/Hide InfoWindow - ", "")
-	}
-	else if regexmatch(A_LoopReadLine, "Timer delay - (.*)")
-	{
+	}	else if regexmatch(A_LoopReadLine, "Timer delay - (.*)")	{
 		timerdelay := RegExReplace(A_LoopReadLine, "Timer delay - ", "")
 	}
 }
@@ -122,36 +119,35 @@ return
 showhide:
 IfWinNotActive, SWHelper : bass_devware
 	gui, show
-else
-	gui,	hide
+else	
+	gui, hide
 return
 
 selectd:
 FileSelectFile, SelectedFile, 3, , Open a config.ini, Text Documents (config.ini)
 if SelectedFile =
 	return
-else
-{
+else	{
 	GuiControl, , Edit, %SelectedFile%
 	GuiControl, enable, check
 }
 return
 
 looplabel:
-	SendMessage, 0x50,, 0x4090409,, A
+SendMessage, 0x50,, 0x4090409,, A
 Hotkey, (, on
 Hotkey, ), on
 Hotkey, Right, on
 Hotkey, Left, on
-if (oldACaretX = "" or oldACaretY = "")
-{
+if (oldACaretX = "" or oldACaretY = "")	{
 	oldACaretX := A_CaretX
 	oldACaretY := A_CaretY
+	sleep 1
 }
-if (oldACaretX != A_CaretX or oldACaretY != A_CaretY)
-{
-	if oldACaretY != %A_CaretY%
-	{
+TrayTip, A ,%oldACaretX%`n%oldACaretY%, 1
+if (oldACaretX != A_CaretX or oldACaretY != A_CaretY)	{
+	SoundBeep, 100, 10
+	if (oldACaretY != A_CaretY)	{
 		oldACaretX := A_CaretX
 		oldACaretY := A_CaretY
 		Hotkey, (, off
@@ -168,11 +164,9 @@ if (oldACaretX != A_CaretX or oldACaretY != A_CaretY)
 	send, ^{Right}
 	BlockInput, off
 	AINDEXD := "0"
-	if regexmatch(Copyed, "(.)(.)(.)")
-	{
+	if regexmatch(Copyed, "(.)(.)(.)")	{
 		Loop, parse, FuncsList, `,
-		if regexmatch(A_LoopField, "i)"Copyed)
-		{
+		if regexmatch(A_LoopField, "i)"Copyed)	{
 			AINDEXD += 1
 			okeylines := okeylines . "`n *"AINDEXD "*" . A_LoopField
 		}
@@ -206,8 +200,7 @@ return
 if dirfile =
 	return
 send, {)}
-if status = 1
-{
+if (status)	{
 	send, ^{left}
 oldACaretX := A_CaretX
 oldACaretY := A_CaretY
@@ -226,20 +219,22 @@ return
 link:
 run, https://vk.com/bass_devware
 return
+
 Restore:
 Gui,Show
 return
+
 exit:
 ExitApp
 return
 
-saveClipboard(){
-	local ; обеспечить, чтобы глобальные переменные никогда не использовались
-	tmp:=clipboardAll ; сохранить буфер обмена
+saveClipboard()	{
+	local
+	tmp := clipboardAll
 	Send, {ctrl down}c{ctrl up}
-	clipWait,0.5 ; половина секунды
-	selected:=clipboard
-	clipboard:=tmp ; восстановить буфер обмена
+	clipWait, 0.5 
+	selected := clipboard
+	clipboard := tmp 
 	return selected
 }
 
