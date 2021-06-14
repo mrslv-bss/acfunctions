@@ -6,13 +6,12 @@
 	Current version: [1.1]
 		~ [1.1.1] Code and tabulation optimization
 		~ [1.1.2] Code optimization. Added initial terminate script hotkey. Dev comments. Removed crutch for begin a process (). Fixen bug with impossible to use Shift+Ctrl+) withput load config.
+		~ [1.1.3] Clear up code, optimization
 
 A_CaretX works by asking the system where the caret is. Some code editors does not use the system implementation of a caret, therefore the system does not know where's caret is. 
 In a way, it has no caret, just an imitation of one.
 Accordingly, keep in mind that the script may not work in VSCODE, Notepads (Basic notepad working) and other.
 */
-
-
 
 #Persistent
 #SingleInstance, Force
@@ -22,7 +21,7 @@ Accordingly, keep in mind that the script may not work in VSCODE, Notepads (Basi
 CoordMode, Caret
 CoordMode, ToolTip
 
-	; Run as Admin
+; Run as Admin
 TryAgain:
 if not A_IsAdmin
 	Run *RunAs "%A_ScriptFullPath%",,UseErrorLevel
@@ -58,52 +57,23 @@ Shift + Space - recover process after completion
 Alt + Ctrl + END - terminates the script immediately (should be changed by rewrite in config)
 */
 
-; Load loaded functions file
-recheck:
-FuncsList := "" ; Store functions from loaded funcs file
-readfuncfile:
-Loop, read, %dirfile%
-{
-	Loop, parse, A_LoopReadLine, %A_Tab%
-	{
-		regexparam := " " . A_LoopField
-		if regexmatch(regexparam, "(.[\s]*)?([\s].[^(=)%!.]*)\((.[A-z]*)?\)", exits)	{
-			if regexmatch(exits2, "[!|^|%|(|)|#](.*)")
-				continue, readfuncfile
-			exits1 := RegExReplace(exits, " ", "")
-			exits2 := RegExReplace(exits2, " ", "")
-			Loop, parse, FuncsList
-				if regexmatch(FuncsList, exits2)
-					continue, readfuncfile
-			FuncsList := FuncsList . exits2 . "(" . exits3 . ")" . ", "
-		}
-	}
-}
-	; More precise definition of finded function
-FuncsList := RegExReplace(FuncsList, "-", "")
-if regexmatch(FuncsList, "return.[,]*")
-	FuncsList := RegExReplace(FuncsList, "return", "")
-if regexmatch(FuncsList, "if(errorlevel)")
-	FuncsList := RegExReplace(FuncsList, "if(errorlevel)", "")
-return
-
-	; Read config file
+; Read config file
 check:
 Gui, Submit, Nohide
 Loop, read, %edit%
 {
 	if regexmatch(A_LoopReadLine, "List with funcs - (.*)")	{
-		dirfile := RegExReplace(A_LoopReadLine, "List with funcs - ", "")
-		StringTrimRight, localdir, A_WorkingDir, 4
+		dirfile := StrReplace(A_LoopReadLine, "List with funcs - ", "")
+		StringTrimRight, localdir, A_WorkingDir, 4 ; File with funcs should story near script in folder /res
 		dirfile = %localdir%\res\%dirfile%
 	}	else if regexmatch(A_LoopReadLine, "Close the script - (.*)")	{
-		exitscript := RegExReplace(A_LoopReadLine, "Close the script - ", "")
-	}	else if regexmatch(A_LoopReadLine, "Edit exist scipt\(_\) - (.*)")	{
-		createB := RegExReplace(A_LoopReadLine, "Edit exist scipt\(_\) - ", "")
+		exitscript := StrReplace(A_LoopReadLine, "Close the script - ", "")
+	}	else if regexmatch(A_LoopReadLine, "Continue write function\(_\) - (.*)")	{
+		createB := regexreplace(A_LoopReadLine, "Continue write function\(_\) - ", "")
 	}	else if regexmatch(A_LoopReadLine, "Show/Hide menu - (.*)")	{
-		showhide := RegExReplace(A_LoopReadLine, "Show/Hide menu - ", "")
+		showhide := StrReplace(A_LoopReadLine, "Show/Hide menu - ", "")
 	}	else if regexmatch(A_LoopReadLine, "Timer delay - (.*)")	{
-		timerdelay := RegExReplace(A_LoopReadLine, "Timer delay - ", "")
+		timerdelay := StrReplace(A_LoopReadLine, "Timer delay - ", "")
 	}
 }
 HotKey, !^END, Off ; Remove initial script terminate hotkey 
@@ -116,7 +86,36 @@ GuiControl, disable, check
 
 SetTimer, looplabel, %timerdelay% ; Create checking of line timer and set ms/delay
 SetTimer, looplabel, off ; Be activated while script working
-goto recheck
+
+; < - >
+
+; Read funcs file and define all functions
+FuncsList := "" ; Store functions from loaded funcs file
+readfuncfile:
+Loop, read, %dirfile%
+{
+	Loop, parse, A_LoopReadLine, %A_Tab%
+	{
+		regexparam := " " . A_LoopField
+		if regexmatch(regexparam, "(.[\s]*)?([\s].[^(=)%!.]*)\((.[A-z]*)?\)", exits)	{
+			if regexmatch(exits2, "[!|^|%|(|)|#](.*)")
+				continue, readfuncfile
+			exits1 := StrReplace(exits, " ", "")
+			exits2 := StrReplace(exits2, " ", "")
+			Loop, parse, FuncsList
+				if regexmatch(FuncsList, exits2)
+					continue, readfuncfile
+			FuncsList := FuncsList . exits2 . "(" . exits3 . ")" . ", "
+		}
+	}
+}
+
+; More precise definition of finded function
+FuncsList := StrReplace(FuncsList, "-", "")
+if regexmatch(FuncsList, "return.[,]*")
+	FuncsList := StrReplace(FuncsList, "return", "")
+if regexmatch(FuncsList, "if(errorlevel)")
+	FuncsList := StrReplace(FuncsList, "if(errorlevel)", "")
 return
 
 showhide:
@@ -133,20 +132,23 @@ else	{
 }
 return
 
-	; The main loop that detects changes in the line and shows a tooltip with available functions
+; The main loop that detects changes in the line and shows a tooltip with available functions
 looplabel:
 SendMessage, 0x50,, 0x4090409,, A
 Hotkey, (, on
 Hotkey, ), on
 Hotkey, Right, on
 Hotkey, Left, on
+; Save initial caret coords
 if (oldACaretX = "" or oldACaretY = "")	{
 	oldACaretX := A_CaretX, oldACaretY := A_CaretY
 	sleep 1
 }
+; Caret moved, check
 if (oldACaretX != A_CaretX or oldACaretY != A_CaretY)	{
 	SoundBeep, 100, 10
-	; Process canceled, return control
+
+	; Process canceled, return user control
 	if (oldACaretY != A_CaretY)	{
 		oldACaretX := A_CaretX, oldACaretY := A_CaretY
 		Hotkey, (, off
@@ -157,13 +159,16 @@ if (oldACaretX != A_CaretX or oldACaretY != A_CaretY)	{
 		SetTimer, looplabel, off
 		return
 	}
+
+	; Get the written piece to check them out
 	BlockInput, on
 	send, ^+{left}
 	Copied := saveClipboard()
 	send, ^{Right}
 	BlockInput, off
-	AINDEXD := "0"
+	
 	; Finding similar functions to written part
+	AINDEXD := 0
 	if regexmatch(Copied, "(.)(.)(.)")	{
 		Loop, parse, FuncsList, `,
 		if regexmatch(A_LoopField, "i)"Copied)	{
@@ -198,13 +203,15 @@ if (dirfile = "")	{
 	return
 }
 send, {)}
-	; Check is the combination already written '()'
+
+; Check is the combination already written '()'
 BlockInput, on
 send, +{left 2}
 Copied := saveClipboard()
 send, {Right}
 BlockInput, off
-if regexmatch(Copied, "\(")	{
+
+if InStr(Copied, "(")	{
 	send, ^{left}
 	oldACaretX := A_CaretX, oldACaretY := A_CaretY
 	sleep 100
