@@ -7,6 +7,7 @@
 		~ [1.1.1] Code and tabulation optimization
 		~ [1.1.2] Code optimization. Added initial terminate script hotkey. Dev comments. Removed crutch for begin a process (). Fixen bug with impossible to use Shift+Ctrl+) withput load config.
 		~ [1.1.3] Clear up code, optimization
+		~ [1.1.4] Cosmetic changes
 
 A_CaretX works by asking the system where the caret is. Some code editors does not use the system implementation of a caret, therefore the system does not know where's caret is. 
 In a way, it has no caret, just an imitation of one.
@@ -44,7 +45,7 @@ HotKey, !^END, Exit
 
 Gui, Add, Edit, x9 y10 w262 h20 +disabled vEdit, DIR\config.ini
 Gui, Add, Text, x12 y50 w100 h40 vKeysList, Show/Hide []`nContinue ( ) []`nExit []
-Gui, Add, Link, x220 y55 w120 h14 cBlue, <a href="https://github.com/BassTechnologies/acfunctions">Repository</a>
+Gui, Add, Link, x220 y55 w120 h14 cBlue, <a href="https://github.com/mrslv-bss/acfunctions">Repository</a>
 Gui, Add, GroupBox, x7 y30 w115 h65 , Config Settings
 Gui, Add, Button, x230 y35 w40 h15 gselected, Select
 Gui, Add, Button, x188 y35 w41 h15 gcheck vcheck +disabled, Check
@@ -64,16 +65,15 @@ Loop, read, %edit%
 {
 	if regexmatch(A_LoopReadLine, "List with funcs - (.*)")	{
 		dirfile := StrReplace(A_LoopReadLine, "List with funcs - ", "")
-		StringTrimRight, localdir, A_WorkingDir, 4 ; File with funcs should story near script in folder /res
-		dirfile = %localdir%\res\%dirfile%
+		dirfile = %A_WorkingDir%\res\%dirfile%
 	}	else if regexmatch(A_LoopReadLine, "Close the script - (.*)")	{
-		exitscript := StrReplace(A_LoopReadLine, "Close the script - ", "")
+			exitscript := StrReplace(A_LoopReadLine, "Close the script - ", "")
 	}	else if regexmatch(A_LoopReadLine, "Continue write function\(_\) - (.*)")	{
-		createB := regexreplace(A_LoopReadLine, "Continue write function\(_\) - ", "")
+			createB := regexreplace(A_LoopReadLine, "Continue write function\(_\) - ", "")
 	}	else if regexmatch(A_LoopReadLine, "Show/Hide menu - (.*)")	{
-		showhide := StrReplace(A_LoopReadLine, "Show/Hide menu - ", "")
+			showhide := StrReplace(A_LoopReadLine, "Show/Hide menu - ", "")
 	}	else if regexmatch(A_LoopReadLine, "Timer delay - (.*)")	{
-		timerdelay := StrReplace(A_LoopReadLine, "Timer delay - ", "")
+			timerdelay := StrReplace(A_LoopReadLine, "Timer delay - ", "")
 	}
 }
 HotKey, !^END, Off ; Remove initial script terminate hotkey 
