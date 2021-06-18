@@ -1,13 +1,16 @@
 /*
 	Miroslav Bass
 	bassmiroslav@gmail.com
-	Last stable version: [1.0] 4.14.2019
+	Outdated: [1.0] 4.14.2019
 		~ Release
 	Current version: [1.1]
 		~ [1.1.1] Code and tabulation optimization
 		~ [1.1.2] Code optimization. Added initial terminate script hotkey. Dev comments. Removed crutch for begin a process (). Fixen bug with impossible to use Shift+Ctrl+) withput load config.
 		~ [1.1.3] Clear up code, optimization
 		~ [1.1.4] Cosmetic changes
+		~ [1.1.5] Clear up code
+
+	Last stable version: [1.1.5] 6.18.2021
 
 A_CaretX works by asking the system where the caret is. Some code editors does not use the system implementation of a caret, therefore the system does not know where's caret is. 
 In a way, it has no caret, just an imitation of one.
@@ -53,9 +56,9 @@ Gui, Show, w275 h100, ACFunctions
 return
 
 /*
-Shift + Ctrl + ( + ) - start process
-Shift + Space - recover process after completion
-Alt + Ctrl + END - terminates the script immediately (should be changed by rewrite in config)
+	Shift + Ctrl + ( + ) - start process
+	Shift + Space - recover process after completion
+	Alt + Ctrl + END - terminates the script immediately (should be changed by rewrite in config)
 */
 
 ; Read config file
@@ -72,7 +75,7 @@ Loop, read, %edit%
 			createB := regexreplace(A_LoopReadLine, "Continue write function\(_\) - ", "")
 	}	else if regexmatch(A_LoopReadLine, "Show/Hide menu - (.*)")	{
 			showhide := StrReplace(A_LoopReadLine, "Show/Hide menu - ", "")
-	}	else if regexmatch(A_LoopReadLine, "Timer delay - (.*)")	{
+	}	else if regexmatch(A_LoopReadLine, "Timer delay - (\d\d?\d?\d?)")	{
 			timerdelay := StrReplace(A_LoopReadLine, "Timer delay - ", "")
 	}
 }
@@ -172,7 +175,7 @@ if (oldACaretX != A_CaretX or oldACaretY != A_CaretY)	{
 	if regexmatch(Copied, "(.)(.)(.)")	{
 		Loop, parse, FuncsList, `,
 		if regexmatch(A_LoopField, "i)"Copied)	{
-			AINDEXD += 1
+			AINDEXD++
 			okeylines := okeylines . "`n *"AINDEXD "*" . A_LoopField
 		}
 		ToolTip, Find function: %Copied% `n`n %okeylines%, A_CaretX, A_CaretY+50
