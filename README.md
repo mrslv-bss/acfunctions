@@ -9,4 +9,4 @@ Flexibly configuration and example functions files included.
 
 <hr>
 
->![Image alt](https://github.com/mrslv-bss/acfunctions/blob/main/Res/acf.jpg)
+>![Image alt](https://github.com/mrslv-bss/acfunctions/blob/main/res/acf.jpg)
